@@ -1,0 +1,11 @@
+04-Oct	Detailed Design
+11-Oct	Detailed Design
+18-Oct	Detailed Design
+25-Oct	Implementation
+01-Nov	Implementation
+08-Nov	Implementation
+15-Nov	Implementation
+22-Nov	Implementation
+29-Nov	Alfa Testing
+06-Dec	Alfa Testing
+13-Dec	Presentation and Evaluation
