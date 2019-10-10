@@ -1,0 +1,24 @@
+Basic features
+
+1- User interface should also work on phones
+2- We should have AI players
+3- Multiplayer with Human players
+4- Several leaderboards –  Top Score (calculated based on a simple formula: final_position*x + length_of_wall*y + kills*z + time*v), Wins, Kills, Total time played
+5- The game should have a lobby when a player creates a new game. This is where the user who creates the game can specify the number of players, set up the number of AI players, set up the Map (can choose a random one too), set up player color, select whether the walls of dead players disappear or not. The game starts after every human player signals that they are ready (perhaps after a 3sec countdown)
+6- User Accounts: only registered users can play. The game must ensure users can register, log in, log out, reset password.
+
+The map
+
+0- Made up of square blocks
+1- Rectangular in shape (but not necessarily a square)
+2- MAX size 128*128, MIN size 10*10 
+3- There can be walls on the map, cycles that crash into it die
+4- Map Editor allows users to create maps that everybody can play on. It allows users to select the map shape, #of players it supports, player spawn location, wall locations, possible power up locations. The map editor should have a very similar UI to the game and also work on phones.
+5- When players die, the may or may not disappear, based on what was specified when starting the game.
+6 -The edges of the map act as a wall
+
+Gameplay
+
+1- The light cycles are controlled exactly like in the classic version of Snake. In each turn they move one block
+2- Players can use Turbo (3 Charges) that makes their cycle move 3 blocks in one direction for 1 turn each
+3- The map can contain a Turbo recharge power-up. Picking this up recharges 1 slot up to the maximum of 3.
