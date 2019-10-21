@@ -1,5 +1,10 @@
 import unittest
 
+import ai_bot
+from map import Map
+from path_finder import PathFinder
+from position import Position
+
 
 class MyTestCase(unittest.TestCase):
     def test_something(self):
