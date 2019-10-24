@@ -10,6 +10,10 @@ app = None
 current_map = None
 path_finder = None
 
+@app.route('/')
+def hello():
+    """Return a friendly HTTP greeting."""
+    return 'Hello World!'
 
 def main() -> None:
     """mod: this function is main function of the module."""
@@ -28,4 +32,4 @@ def generate_response() -> None:
 
 if __name__ == '__main__':
     app = Flask(__name__)
-    app.run(sys.argv)
+    app.run(host='127.0.0.1', port=8080, debug=True)
