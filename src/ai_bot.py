@@ -6,7 +6,7 @@ from map import Map
 from path_finder import PathFinder
 from position import Position
 
-app = None
+app = Flask(__name__)
 current_map = None
 path_finder = None
 
@@ -31,5 +31,4 @@ def generate_response() -> None:
 
 
 if __name__ == '__main__':
-    app = Flask(__name__)
     app.run(host='127.0.0.1', port=8080, debug=True)
