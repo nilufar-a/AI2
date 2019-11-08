@@ -1,97 +1,100 @@
 """This module contains AI Bot implementation for TRON game."""
-import sys
-
-from flask import Flask, request
+import requests
+from threading import Thread
+from flask import Flask, request, make_response
 from map import Map
 from path_finder import PathFinder
-from position import Position
 
 app = Flask(__name__)
-current_map = None
-path_finder = None
 
-AI_ID=900
+# todo add URLs and method names (find in in APIGateway REST API Description)
+api_gateway_urls = None
+get_current_state_method = None
+post_move_method = None
+unregister_user_method = None
 
-@app.route('/')
+
+@app.route('/', methods=['GET'])
 def hello():
     """Return a friendly HTTP greeting."""
     return 'Hello World!'
 
-@app.route('/getmove', methods=['POST'])
-def get_move():
-	try:
-		gamestate = request.json
-		ai = None
 
-		# add obstacle
-		_map = gamestate['map']
-		left_wall = 	[{'xCoor' : i, 'yCoor' : 0} for i in range(_map['width'])]
-		right_wall = 	[{'xCoor' : i, 'yCoor' : _map['height'] - 1} for i in range(_map['width'])]
-		top_wall = 	[{'xCoor' : 0, 'yCoor' : i} for i in range(_map['height'])]
-		bottom_wall = 	[{'xCoor' : _map['width'] - 1, 'yCoor' : i} for i in range(_map['height'])] 
-
-		obstacles = left_wall + right_wall + top_wall + bottom_wall
-				
-
-		for obstacle in _map['obstacles']:
-			obstacles.append(obstacle)
-
-		print(obstacles)
-
-		for player in gamestate['players']:
-			# add head obstacles
-			obstacles.append(player['headPosition'])
-
-			# add body obstacles
-			for point in player['tracer']:
-				obstacles.append(point)
-
-			# find the AI player
-			if player['id'] == "900":
-				ai = player
-
-		direction = (ai['headPosition']['xCoor'] - ai['tracer'][0]['xCoor'],  ai['headPosition']['yCoor'] - ai['tracer'][0]['yCoor'])
-
-		# directions
-		
-		forward = {'xCoor' : ai['headPosition']['xCoor'] + direction[0], 'yCoor' : ai['headPosition']['yCoor'] + direction[1]}
+@app.route('/createBot', methods=['POST'])
+def create_bot():
+    # todo check JSON key names (in APIGateway/MatchMaking REST API Description)
+    # todo write API request description together with AI1/APIGateway/MatchMaking teams
+    user_id = request.form.get('userID')
+    game_id = request.form.get('gameID')
+    token = request.form.get('token')
+    bot = Thread(target=bot_routine, args=(user_id, game_id, token), daemon=True)
+    bot.start()
+    return make_response('OK', 200)
 
 
-		left = [i * -1 for i in direction[::-1]]
-		left = { 'xCoor' : ai['headPosition']['xCoor'] + left[0], 'yCoor' :  ai['headPosition']['yCoor'] + left[1]}
-
-		right = direction[::-1]
-		right = { 'xCoor' : ai['headPosition']['xCoor'] + right[0], 'yCoor' :  ai['headPosition']['yCoor'] + right[1]}
-
-		if forward not in obstacles:
-			return {'direction' : forward}
-
-		if left not in obstacles:
-			return {'direction' : left}
-
-		if right not in obstacles:
-			return {'direction' : right}
-			
-		return {'direction' : forward}
-	except Exception as e:
-		raise e
-		return {"status" : "error", "error" : str(e)}
-
-
-def main() -> None:
+def bot_routine(user_id, game_id, token) -> None:
     """mod: this function is main function of the module."""
-    pass
 
+    current_map = Map()
+    path_finder = PathFinder()
+    next_move = None
+    current_state_response = None
+    game_status_flag = True
 
-def parse_request() -> None:
-    """mod: this function parses REST API request."""
-    pass
+    def sent_current_state_request() -> None:
+        """mod: this function sents REST API request."""
+        global api_gateway_urls, get_current_state_method
+        nonlocal user_id, game_id, token, current_state_response
+        # todo check JSON key names (in APIGateway REST API Description)
+        current_state_response = requests.post(api_gateway_urls + get_current_state_method,
+                                               data={'UserID': user_id, 'GameId': game_id, "Token": token})
 
+    def sent_post_move_request() -> None:
+        global api_gateway_urls, post_move_method
+        """mod: this function sents REST API request."""
+        nonlocal next_move, user_id, game_id, token
+        # todo check JSON key names (in APIGateway REST API Description)
+        # todo check JSON "Direction" key possible values
+        requests.post(api_gateway_urls + post_move_method,
+                      data={'Direction': next_move, 'UserID': user_id, 'TurboFlag': True})
 
-def generate_response() -> None:
-    """mod: this function generates REST API response."""
-    pass
+    def sent_unregister_user_request() -> None:
+        """mod: this function sents REST API request."""
+        global api_gateway_urls, unregister_user_method
+        nonlocal user_id, game_id, token
+        # todo check JSON key names (in APIGateway/UserAuthentication REST API Description)
+        requests.post(api_gateway_urls + unregister_user_method,
+                      data={'UserID': user_id, 'GameId': game_id, "Token": token})
+
+    def parse_current_state_response() -> None:
+        """mod: this function parses REST API response."""
+        nonlocal current_state_response, current_map, path_finder, game_status_flag
+        # todo check JSON key names (in APIGateway and GameEngine REST API Description)
+        # todo add parsing logic
+        current_state_response.form.get('data')
+        game_status_flag = None
+        if game_status_flag:
+            current_map.map_scheme = None
+            current_map.players_positions = None
+            current_map.bots_positions = None
+            current_map.turbos_positions = None
+            current_map.obstacles_positions = None
+            current_map.traces_positions = None
+
+            path_finder.tron_map = current_map
+            path_finder.start_position = None
+            path_finder.algorithm = None
+            path_finder.turbos_number = None
+
+    while True:
+        sent_current_state_request()
+        parse_current_state_response()
+        if not game_status_flag:
+            sent_unregister_user_request()
+            return
+        next_move = path_finder.get_direction()
+        sent_post_move_request()
 
 
 if __name__ == '__main__':
-    app.run(host='127.0.0.1', port=8080, debug=True)
+    app.run(debug=True)
