@@ -1,6 +1,6 @@
 import unittest
 
-import ai_bot
+import main
 from map import Map
 from path_finder import PathFinder
 from position import Position

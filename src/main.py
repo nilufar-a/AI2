@@ -15,9 +15,9 @@ unregister_user_method = None
 
 
 @app.route('/', methods=['GET'])
-def hello():
-    """Return a friendly HTTP greeting."""
-    return 'Hello World!'
+def test_response():
+    """Return a HTTP response."""
+    return make_response('OK', 200)
 
 
 @app.route('/createBot', methods=['POST'])
