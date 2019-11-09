@@ -20,21 +20,24 @@ def test_response():
     return make_response('OK', 200)
 
 
-@app.route('/createBot', methods=['POST'])
+@app.route('/ai-bot', methods=['POST'])
 def create_bot():
     # todo check JSON key names (in APIGateway/MatchMaking REST API Description)
     # todo write API request description together with AI1/APIGateway/MatchMaking teams
     user_id = request.form.get('userID')
     game_id = request.form.get('gameID')
     token = request.form.get('token')
-    bot = Thread(target=bot_routine, args=(user_id, game_id, token), daemon=True)
-    bot.start()
-    return make_response('OK', 200)
+
+    if user_id and game_id and token:
+        bot = Thread(target=bot_routine, args=(user_id, game_id, token), daemon=True)
+        bot.start()
+        return make_response('OK', 200)
+    else:
+        return make_response('BAD REQUEST', 400)
 
 
 def bot_routine(user_id, game_id, token) -> None:
     """mod: this function is main function of the module."""
-
     current_map = Map()
     path_finder = PathFinder()
     next_move = None
@@ -42,7 +45,7 @@ def bot_routine(user_id, game_id, token) -> None:
     game_status_flag = True
 
     def sent_current_state_request() -> None:
-        """mod: this function sents REST API request."""
+        """mod: this function sends REST API request."""
         global api_gateway_urls, get_current_state_method
         nonlocal user_id, game_id, token, current_state_response
         # todo check JSON key names (in APIGateway REST API Description)
@@ -51,7 +54,7 @@ def bot_routine(user_id, game_id, token) -> None:
 
     def sent_post_move_request() -> None:
         global api_gateway_urls, post_move_method
-        """mod: this function sents REST API request."""
+        """mod: this function sends REST API request."""
         nonlocal next_move, user_id, game_id, token
         # todo check JSON key names (in APIGateway REST API Description)
         # todo check JSON "Direction" key possible values
@@ -59,12 +62,12 @@ def bot_routine(user_id, game_id, token) -> None:
                       data={'Direction': next_move, 'UserID': user_id, 'TurboFlag': True})
 
     def sent_unregister_user_request() -> None:
-        """mod: this function sents REST API request."""
+        """mod: this function sends REST API request."""
         global api_gateway_urls, unregister_user_method
-        nonlocal user_id, game_id, token
+        nonlocal user_id, token
         # todo check JSON key names (in APIGateway/UserAuthentication REST API Description)
-        requests.post(api_gateway_urls + unregister_user_method,
-                      data={'UserID': user_id, 'GameId': game_id, "Token": token})
+        requests.delete(api_gateway_urls + unregister_user_method,
+                        data={'userID': user_id, "token": token})
 
     def parse_current_state_response() -> None:
         """mod: this function parses REST API response."""
