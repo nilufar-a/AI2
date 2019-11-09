@@ -44,7 +44,7 @@ def bot_routine(user_id, game_id, token) -> None:
     current_state_response = None
     game_status_flag = True
 
-    def sent_current_state_request() -> None:
+    def send_current_state_request() -> None:
         """mod: this function sends REST API request."""
         global api_gateway_urls, get_current_state_method
         nonlocal user_id, game_id, token, current_state_response
@@ -52,7 +52,7 @@ def bot_routine(user_id, game_id, token) -> None:
         current_state_response = requests.post(api_gateway_urls + get_current_state_method,
                                                data={'UserID': user_id, 'GameId': game_id, "Token": token})
 
-    def sent_post_move_request() -> None:
+    def send_post_move_request() -> None:
         global api_gateway_urls, post_move_method
         """mod: this function sends REST API request."""
         nonlocal next_move, user_id, game_id, token
@@ -61,7 +61,7 @@ def bot_routine(user_id, game_id, token) -> None:
         requests.post(api_gateway_urls + post_move_method,
                       data={'Direction': next_move, 'UserID': user_id, 'TurboFlag': True})
 
-    def sent_unregister_user_request() -> None:
+    def send_unregister_user_request() -> None:
         """mod: this function sends REST API request."""
         global api_gateway_urls, unregister_user_method
         nonlocal user_id, token
@@ -90,13 +90,13 @@ def bot_routine(user_id, game_id, token) -> None:
             path_finder.turbos_number = None
 
     while True:
-        sent_current_state_request()
+        send_current_state_request()
         parse_current_state_response()
         if not game_status_flag:
-            sent_unregister_user_request()
+            send_unregister_user_request()
             return
         next_move = path_finder.get_direction()
-        sent_post_move_request()
+        send_post_move_request()
 
 
 if __name__ == '__main__':
