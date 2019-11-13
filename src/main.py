@@ -1,5 +1,6 @@
 """This module contains AI Bot implementation for TRON game."""
 import requests
+import json
 from threading import Thread
 from flask import Flask, request, make_response
 from map import Map
@@ -71,23 +72,36 @@ def bot_routine(user_id, game_id, token) -> None:
 
     def parse_current_state_response() -> None:
         """mod: this function parses REST API response."""
-        nonlocal current_state_response, current_map, path_finder, game_status_flag
+        nonlocal current_state_response, current_map, path_finder, game_status_flag, user_id
         # todo check JSON key names (in APIGateway and GameEngine REST API Description)
         # todo add parsing logic
-        current_state_response.form.get('data')
-        game_status_flag = None
-        if game_status_flag:
-            current_map.map_scheme = None
-            current_map.players_positions = None
-            current_map.bots_positions = None
-            current_map.turbos_positions = None
-            current_map.obstacles_positions = None
-            current_map.traces_positions = None
+        game_state = json.loads(current_state_response.form.get('data'))
 
-            path_finder.tron_map = current_map
-            path_finder.start_position = None
-            path_finder.algorithm = None
-            path_finder.turbos_number = None
+        time_elapsed = None
+        current_map.map_scheme['height'] = game_state['map']['height']
+        current_map.map_scheme['width'] = game_state['map']['width']
+        current_map.obstacles_positions = game_state['map']['obstacles']
+        current_map.bots_positions = game_state['map']['power-ups']
+        current_map.traces_positions = game_state['map']['tracers']
+        path_finder.tron_map = current_map
+
+        players_positions = list()
+        for player in game_state['players']:
+            if player['id'] == user_id:
+                path_finder.start_position = player['headPosition']
+                path_finder.turbos_number = player['turboAmount']
+                time_elapsed = player["timeElapsed"]
+            else:
+                players_positions.append(player['headPosition'])
+        current_map.players_positions = players_positions
+        if not time_elapsed:
+            game_status_flag = False
+        elif time_elapsed > 500:
+            path_finder.algorithm = 'Random'
+        elif time_elapsed > 100:
+            path_finder.algorithm = 'Survival'
+        else:
+            path_finder.algorithm = 'A*'
 
     while True:
         send_current_state_request()
