@@ -74,12 +74,13 @@ class PathFinder:
             for direction in possible_directions:
                 density = self.tron_map.get_density(self.start_position, direction)
                 direction_densities.append((density, direction))
-            best_direction = sorted(direction_densities)[0][1]
+            best_direction = sorted(direction_densities, key=lambda density_object: density_object[0])[0][1]
             return best_direction
 
         elif self.algorithm == 'A*':
             for player_position in self.tron_map.players_positions:
-                generated_path = self.generate_path(self.start_position, player_position, list())
+                target_block = self.tron_map.get_possible_directions(player_position)[0]
+                generated_path = self.generate_path(self.start_position, target_block, list())
                 self.generated_paths.append(generated_path)
             shortest_path = self.get_shortest_path()
             next_position = shortest_path[0]
@@ -113,6 +114,10 @@ class PathFinder:
             return total_cost
 
         possible_directions = self.tron_map.get_possible_directions(start_block)
+        for i, direction in enumerate(possible_directions):
+            if direction in path:
+                possible_directions.pop(i)
+
         for next_block in sorted(possible_directions, key=sorter):
             new_path = list(path)
             new_path.append(next_block)

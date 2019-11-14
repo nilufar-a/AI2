@@ -76,11 +76,13 @@ class Map:
         possible_directions = list()
         for row_index in range(block.row_index - 1, block.row_index + 2):
             for column_index in range(block.column_index - 1, block.column_index + 2):
-                if row_index >= self.map_scheme['height']:
+                if row_index not in range(self.map_scheme['height']):
                     continue
-                if column_index >= self.map_scheme['width']:
+                if column_index not in range(self.map_scheme['width']):
                     continue
-                if not((row_index == block.row_index) == (column_index == block.column_index)):
+                if row_index != block.row_index and column_index != block.column_index:
+                    continue
+                if row_index == block.row_index and column_index == block.column_index:
                     continue
                 next_position = Position(row_index, column_index)
                 if next_position in self.players_positions:
@@ -131,14 +133,14 @@ class Map:
         end_column = self.map_scheme['width']
 
         if direction_block.row_index > current_block.row_index:
-            start_row = direction_block.row_index
+            start_row = current_block.row_index
         elif direction_block.row_index < current_block.row_index:
-            end_row = direction_block.row_index
+            end_row = current_block.row_index
 
         if direction_block.column_index > current_block.column_index:
-            start_column = direction_block.column_index
+            start_column = current_block.column_index
         elif direction_block.column_index < current_block.column_index:
-            end_column = direction_block.column_index
+            end_column = current_block.column_index
 
         for row_index in range(start_row, end_row):
             for column_index in range(start_column, end_column):
