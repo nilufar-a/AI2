@@ -55,19 +55,27 @@ class PathFinder:
 
     turbos_number = property(__get_turbos_number, __set_turbos_number)
 
-    def get_direction(self) -> Position:
+    def get_direction(self) -> tuple:
         """
         mod: this function calculates destination (target) block.
 
         Returns:
-            :returns target_block
+            :returns target_block -- next block to move on
+            :returns turbo_flag -- next block to move on
+
+        Raises:
+            :raise NoSolution -- No possible direction to move on exception
 
         """
+        self.generated_paths = list()
         possible_directions = self.tron_map.get_possible_directions(self.start_position)
+        if not possible_directions:
+            raise NoSolution('No possible direction to move on.')
         random_direction = possible_directions[randint(0, len(possible_directions) - 1)]
+        turbo_flag = False
 
         if self.algorithm == 'Random':
-            return random_direction
+            return random_direction, turbo_flag
 
         elif self.algorithm == 'Survival':
             direction_densities = list()
@@ -75,18 +83,30 @@ class PathFinder:
                 density = self.tron_map.get_density(self.start_position, direction)
                 direction_densities.append((density, direction))
             best_direction = sorted(direction_densities, key=lambda density_object: density_object[0])[0][1]
-            return best_direction
+            return best_direction, turbo_flag
 
         elif self.algorithm == 'A*':
             for player_position in self.tron_map.players_positions:
                 target_block = self.tron_map.get_possible_directions(player_position)[0]
-                generated_path = self.generate_path(self.start_position, target_block, list())
-                self.generated_paths.append(generated_path)
+                try:
+                    generated_path = self.generate_path(self.start_position, target_block, list())
+                    self.generated_paths.append(generated_path)
+                except NoSolution:
+                    continue
+
+            if not self.generated_paths:
+                return random_direction, turbo_flag
+
             shortest_path = self.get_shortest_path()
+            if self.turbos_number and len(shortest_path) > 3:
+                if shortest_path[0].row_index == shortest_path[1].row_index == shortest_path[2].row_index:
+                    turbo_flag = True
+                elif shortest_path[0].column_index == shortest_path[1].column_index == shortest_path[2].column_index:
+                    turbo_flag = True
             next_position = shortest_path[0]
-            return next_position
+            return next_position, turbo_flag
         else:
-            return random_direction
+            return random_direction, turbo_flag
 
     def generate_path(self, start_block: Position, target_block: Position, path: list) -> list:
         """
@@ -99,6 +119,9 @@ class PathFinder:
 
         Returns:
             :returns path to target_block
+
+        Raises:
+            :raise NoSolution -- No possible direction to move on exception
 
         """
         if start_block == target_block:
@@ -114,19 +137,23 @@ class PathFinder:
             return total_cost
 
         possible_directions = self.tron_map.get_possible_directions(start_block)
-        for i, direction in enumerate(possible_directions):
+        for direction in possible_directions.copy():
             if direction in path:
-                possible_directions.pop(i)
+                possible_directions.remove(direction)
+        if not possible_directions:
+            raise NoSolution('No possible direction to move on.')
 
         for next_block in sorted(possible_directions, key=sorter):
             new_path = list(path)
             new_path.append(next_block)
 
-            return_value = self.generate_path(next_block, target_block, new_path)
-            if return_value:
-                return return_value
-            else:
+            try:
+                generated_path = self.generate_path(next_block, target_block, new_path)
+                return generated_path
+            except NoSolution:
                 continue
+        else:
+            raise NoSolution('No possible path to reach destination.')
 
     def get_shortest_path(self) -> list:
         """
@@ -168,7 +195,14 @@ class PathFinder:
                 else:
                     if current_position not in tron_map.turbos_positions:
                         length += 1
+            return length
 
         sorted_paths = sorted(self.generated_paths, key=path_sorter, reverse=True)
         shortest_path = sorted_paths[0]
         return shortest_path
+
+
+class NoSolution(Exception):
+    """NoSolution exception ."""
+
+    pass

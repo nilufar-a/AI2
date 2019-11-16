@@ -4,7 +4,7 @@ import json
 from threading import Thread
 from flask import Flask, request, make_response
 from map import Map
-from path_finder import PathFinder
+from path_finder import PathFinder, NoSolution
 
 app = Flask(__name__)
 
@@ -41,7 +41,9 @@ def bot_routine(user_id, game_id, token) -> None:
     """mod: this function is main function of the module."""
     current_map = Map()
     path_finder = PathFinder()
+    start_position = None
     next_move = None
+    turbo_flag = False
     current_state_response = None
     game_status_flag = True
 
@@ -56,11 +58,20 @@ def bot_routine(user_id, game_id, token) -> None:
     def send_post_move_request() -> None:
         global api_gateway_urls, post_move_method
         """mod: this function sends REST API request."""
-        nonlocal next_move, user_id, game_id, token
+        nonlocal start_position, next_move, turbo_flag, user_id, game_id, token
         # todo check JSON key names (in APIGateway REST API Description)
         # todo check JSON "Direction" key possible values
+        direction = None
+        if next_move.row_index > start_position.row_index:
+            direction = 'UP'
+        elif next_move.row_index < start_position.row_index:
+            direction = 'DOWN'
+        elif next_move.column_index > start_position.column_index:
+            direction = 'RIGHT'
+        elif next_move.column_index < start_position.column_index:
+            direction = 'LEFT'
         requests.post(api_gateway_urls + post_move_method,
-                      data={'Direction': next_move, 'UserID': user_id, 'TurboFlag': True})
+                      data={'Direction': direction, 'UserID': user_id, 'TurboFlag': turbo_flag})
 
     def send_unregister_user_request() -> None:
         """mod: this function sends REST API request."""
@@ -72,7 +83,7 @@ def bot_routine(user_id, game_id, token) -> None:
 
     def parse_current_state_response() -> None:
         """mod: this function parses REST API response."""
-        nonlocal current_state_response, current_map, path_finder, game_status_flag, user_id
+        nonlocal current_state_response, current_map, path_finder, start_position, game_status_flag, user_id
         # todo check JSON key names (in APIGateway and GameEngine REST API Description)
         # todo add parsing logic
         game_state = json.loads(current_state_response.form.get('data'))
@@ -88,7 +99,8 @@ def bot_routine(user_id, game_id, token) -> None:
         players_positions = list()
         for player in game_state['players']:
             if player['id'] == user_id:
-                path_finder.start_position = player['headPosition']
+                start_position = player['headPosition']
+                path_finder.start_position = start_position
                 path_finder.turbos_number = player['turboAmount']
                 time_elapsed = player["timeElapsed"]
             else:
@@ -109,8 +121,11 @@ def bot_routine(user_id, game_id, token) -> None:
         if not game_status_flag:
             send_unregister_user_request()
             return
-        next_move = path_finder.get_direction()
-        send_post_move_request()
+        try:
+            next_move, turbo_flag = path_finder.get_direction()
+            send_post_move_request()
+        except NoSolution:
+            continue
 
 
 if __name__ == '__main__':
