@@ -89,7 +89,7 @@ class PathFinder:
             for player_position in self.tron_map.players_positions:
                 target_block = self.tron_map.get_possible_directions(player_position)[0]
                 try:
-                    generated_path = self.generate_path(self.start_position, target_block, list())
+                    generated_path = self.generate_path(self.start_position, target_block)
                     self.generated_paths.append(generated_path)
                 except NoSolution:
                     continue
@@ -103,19 +103,18 @@ class PathFinder:
                     turbo_flag = True
                 elif shortest_path[0].column_index == shortest_path[1].column_index == shortest_path[2].column_index:
                     turbo_flag = True
-            next_position = shortest_path[0]
+            next_position = shortest_path[1]
             return next_position, turbo_flag
         else:
             return random_direction, turbo_flag
 
-    def generate_path(self, start_block: Position, target_block: Position, path: list) -> list:
+    def generate_path(self, start_block: Position, target_block: Position) -> list:
         """
         mod: this function generates path to target_block.
 
         Arguments:
             :param start_block - destination position on the map
             :param target_block - destination position on the map
-            :param path - already calculated path
 
         Returns:
             :returns path to target_block
@@ -124,34 +123,33 @@ class PathFinder:
             :raise NoSolution -- No possible direction to move on exception
 
         """
-        if start_block == target_block:
-            return path
-
         tron_map = self.tron_map
 
-        def sorter(current_block: Position):
+        def sorter(path_of_blocks: list):
             nonlocal tron_map, target_block
-            covered_distance = len(path)
-            estimated_distance = tron_map.get_distance(current_block, target_block)
+            covered_distance = len(path_of_blocks)
+            last_node = path_of_blocks[-1]
+            estimated_distance = tron_map.get_distance(last_node, target_block)
             total_cost = covered_distance + estimated_distance
             return total_cost
 
-        possible_directions = self.tron_map.get_possible_directions(start_block)
-        for direction in possible_directions.copy():
-            if direction in path:
-                possible_directions.remove(direction)
-        if not possible_directions:
-            raise NoSolution('No possible direction to move on.')
-
-        for next_block in sorted(possible_directions, key=sorter):
-            new_path = list(path)
-            new_path.append(next_block)
-
-            try:
-                generated_path = self.generate_path(next_block, target_block, new_path)
-                return generated_path
-            except NoSolution:
+        closed_blocks = list()
+        open_paths = list()
+        open_paths.append([start_block])
+        while open_paths:
+            open_paths.sort(key=sorter)
+            current_path = open_paths.pop(0)
+            current_block = current_path[-1]
+            if current_block in closed_blocks:
                 continue
+            if current_block == target_block:
+                return current_path
+            closed_blocks.append(current_block)
+            for block in self.tron_map.get_possible_directions(current_block):
+                if block in closed_blocks:
+                    continue
+                path = current_path + [block]
+                open_paths.append(path)
         else:
             raise NoSolution('No possible path to reach destination.')
 
