@@ -72,7 +72,7 @@ class MyTestCase(unittest.TestCase):
         self.path_finder.start_position = Position(10, 15)
         self.path_finder.turbos_number = 3
 
-    def test_get_direction(self):
+    def test_get_direction_1(self):
         for algorithm in ('Random', 'Survival', 'A*'):
             self.path_finder.algorithm = algorithm
             with self.subTest(algorithm=algorithm, arrangement=1):
@@ -81,11 +81,17 @@ class MyTestCase(unittest.TestCase):
                 self.assertTrue(next_move in self.current_map.get_possible_directions(self.path_finder.start_position))
                 self.assertFalse(turbo_flag)
 
+    def test_get_direction_2(self):
+        for algorithm in ('Random', 'Survival', 'A*'):
+            self.path_finder.algorithm = algorithm
             with self.subTest(algorithm=algorithm, arrangement=2):
                 self.arrangement_2()
                 with self.assertRaises(NoSolution):
                     self.path_finder.get_direction()
 
+    def test_get_direction_3(self):
+        for algorithm in ('Random', 'Survival', 'A*'):
+            self.path_finder.algorithm = algorithm
             with self.subTest(algorithm=algorithm, arrangement=3):
                 self.arrangement_3()
                 next_move, turbo_flag = self.path_finder.get_direction()
@@ -100,6 +106,9 @@ class MyTestCase(unittest.TestCase):
                 else:
                     raise Exception('Unknown algorithm')
 
+    def test_get_direction_4(self):
+        for algorithm in ('Random', 'Survival', 'A*'):
+            self.path_finder.algorithm = algorithm
             with self.subTest(algorithm=algorithm, arrangement=4):
                 self.arrangement_4()
                 next_move, turbo_flag = self.path_finder.get_direction()
@@ -114,6 +123,9 @@ class MyTestCase(unittest.TestCase):
                 else:
                     raise Exception('Unknown algorithm')
 
+    def test_get_direction_5(self):
+        for algorithm in ('Random', 'Survival', 'A*'):
+            self.path_finder.algorithm = algorithm
             with self.subTest(algorithm=algorithm, arrangement=5):
                 self.arrangement_5()
                 next_move, turbo_flag = self.path_finder.get_direction()
@@ -124,7 +136,7 @@ class MyTestCase(unittest.TestCase):
                 elif algorithm == 'Survival':
                     self.assertFalse(turbo_flag)
                 elif algorithm == 'A*':
-                    self.assertTrue(turbo_flag)
+                    self.assertFalse(turbo_flag)
                 else:
                     raise Exception('Unknown algorithm')
 
