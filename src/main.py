@@ -25,9 +25,10 @@ def test_response():
 def create_bot():
     # todo check JSON key names (in APIGateway/MatchMaking REST API Description)
     # todo write API request description together with AI1/APIGateway/MatchMaking teams
-    user_id = request.form.get('userID')
-    game_id = request.form.get('gameID')
-    token = request.form.get('token')
+    data = request.get_json()
+    user_id = data['userID']
+    game_id = data['gameID']
+    token = data['token']
 
     if user_id and game_id and token:
         bot = Thread(target=bot_routine, args=(user_id, game_id, token), daemon=True)
