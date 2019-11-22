@@ -9,10 +9,10 @@ from path_finder import PathFinder, NoSolution
 app = Flask(__name__)
 
 # todo add URLs and method names (find in in APIGateway REST API Description)
-api_gateway_urls = None
-get_current_state_method = None
-post_move_method = None
-unregister_user_method = None
+api_gateway_urls = 'https://api-gateway-dot-trainingprojectlab2019.appspot.com/'
+get_current_state_method = 'getcurrentStateOfMOdel'
+post_move_method = 'PostMove'
+unregister_user_method = 'deleteUser'
 
 
 @app.route('/', methods=['GET'])
@@ -54,7 +54,7 @@ def bot_routine(user_id: int, game_id: int, token: str) -> None:
         nonlocal user_id, game_id, token, current_state_response
         # todo check JSON key names (in APIGateway REST API Description)
         current_state_response = requests.post(api_gateway_urls + get_current_state_method,
-                                               data={'UserID': user_id, 'GameId': game_id, "Token": token})
+                                               data={'GameId': game_id})
 
     def send_post_move_request() -> None:
         global api_gateway_urls, post_move_method
