@@ -38,7 +38,7 @@ def create_bot():
         return make_response('BAD REQUEST', 400)
 
 
-def bot_routine(user_id, game_id, token) -> None:
+def bot_routine(user_id: int, game_id: int, token: str) -> None:
     """mod: this function is main function of the module."""
     current_map = Map()
     path_finder = PathFinder()

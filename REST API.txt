@@ -4,8 +4,8 @@ Use case:  Used for new AI bot creation for TRON game.
 Input properties:
 JSON object
     {
-        "userID": string -- User/AI-Bot identification number;
-        "gameID": string -- Game identification number;
+        "userID": int -- User/AI-Bot identification number;
+        "gameID": int -- Game identification number;
         "token": string -- Secret User/AI-Bot token.
     }
 
