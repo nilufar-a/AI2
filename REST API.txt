@@ -4,9 +4,9 @@ Use case:  Used for new AI bot creation for TRON game.
 Input properties:
 JSON object
     {
-        "userID": int -- User/AI-Bot identification number;
-        "gameID": int -- Game identification number;
-        "token": string -- Secret User/AI-Bot token.
+        "userID": int -- User/AI-Bot identification number e.g. 123;
+        "gameID": int -- Game identification number e.g. 21;
+        "token": string -- Secret User/AI-Bot token e.g. "B6weOFC".
     }
 
 Successful output properties:
@@ -14,3 +14,15 @@ Successful output properties:
 
 Error output properties:
 400 BAD REQUEST -- request cannot be processed.
+
+Sample:
+POST /ai-bot HTTP/1.1
+Host: ai2-dot-trainingprojectlab2019.appspot.com
+Content-Type: application/json
+{
+	"userID": 100,
+	"gameID": 200,
+	"token": "tT1a2B"
+}
+
+Expected response: 200 OK
