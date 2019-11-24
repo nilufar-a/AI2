@@ -127,10 +127,14 @@ class PathFinder:
 
         def sorter(path_of_blocks: list):
             nonlocal tron_map, target_block
-            covered_distance = len(path_of_blocks)
+            first_node = path_of_blocks[0]
             last_node = path_of_blocks[-1]
+            covered_distance = len(path_of_blocks)
             estimated_distance = tron_map.get_distance(last_node, target_block)
-            total_cost = covered_distance + estimated_distance
+            row_deviation = abs(first_node.row_index - last_node.row_index)
+            column_deviation = abs(first_node.column_index - last_node.column_index)
+            deviation = abs(row_deviation - column_deviation)
+            total_cost = covered_distance + estimated_distance + deviation
             return total_cost
 
         closed_blocks = list()

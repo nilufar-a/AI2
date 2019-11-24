@@ -102,7 +102,7 @@ class MyTestCase(unittest.TestCase):
                 elif algorithm == 'Survival':
                     self.assertFalse(turbo_flag)
                 elif algorithm == 'A*':
-                    self.assertTrue(turbo_flag)
+                    self.assertFalse(turbo_flag)
                 else:
                     raise Exception('Unknown algorithm')
 
