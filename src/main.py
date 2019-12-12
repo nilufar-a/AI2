@@ -10,9 +10,9 @@ app = Flask(__name__)
 
 
 api_gateway_urls = 'https://trainingprojectlab2019.appspot.com/'
-get_current_state_method = 'getcurrentStateOfMOdel'
+get_current_state_method = 'GetCurrentStateOfModel'
 post_move_method = 'PostMove'
-unregister_user_method = 'deleteUser'
+unregister_user_method = 'DeleteUser'
 
 
 @app.route('/', methods=['GET'])
@@ -88,7 +88,7 @@ def bot_routine(user_id: int, game_id: int, token: str) -> None:
         nonlocal current_state_response, current_map, path_finder, start_position, game_status_flag, user_id
         game_state = json.loads(current_state_response.form.get('data'))
 
-        time_elapsed = 0
+        time_to_update = 0
         current_map.map_scheme['height'] = game_state['map']['height']
         current_map.map_scheme['width'] = game_state['map']['width']
         current_map.obstacles_positions = game_state['map']['obstacles']
@@ -102,15 +102,15 @@ def bot_routine(user_id: int, game_id: int, token: str) -> None:
                 start_position = player['headPosition']
                 path_finder.start_position = start_position
                 path_finder.turbos_number = player['turboAmount']
-                time_elapsed = player["timeElapsed"]
+                time_to_update = player["timeToUpdate"]
             else:
                 players_positions.append(player['headPosition'])
         current_map.players_positions = players_positions
-        if not time_elapsed:
+        if not time_to_update:
             game_status_flag = False
-        elif time_elapsed > 500:
+        elif time_to_update < 1:
             path_finder.algorithm = 'Random'
-        elif time_elapsed > 100:
+        elif time_to_update < 2:
             path_finder.algorithm = 'Survival'
         else:
             path_finder.algorithm = 'A*'
