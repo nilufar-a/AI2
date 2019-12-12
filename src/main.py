@@ -50,10 +50,9 @@ def bot_routine(user_id: int, game_id: int, token: str) -> None:
         """mod: this function sends REST API request."""
         global api_gateway_urls, get_current_state_method
         nonlocal user_id, game_id, token, current_state_response
-        current_state_response = requests.post(
+        current_state_response = requests.get(
             api_gateway_urls + get_current_state_method,
-            headers={"Content-Type": "application/json", "authorization_header": token},
-            data={'GameId': game_id})
+            params={'GameId': game_id})
         current_state_response.raise_for_status()
 
     def send_post_move_request() -> None:
@@ -71,8 +70,7 @@ def bot_routine(user_id: int, game_id: int, token: str) -> None:
             direction = 'LEFT'
         response = requests.post(
                 api_gateway_urls + post_move_method,
-                headers={"Content-Type": "application/json", "authorization_header": token},
-                data={'Direction': direction, 'UserID': user_id, 'TurboFlag': turbo_flag})
+                json={'Direction': direction, 'UserID': user_id, 'TurboFlag': turbo_flag})
         response.raise_for_status()
 
     def send_unregister_user_request() -> None:
